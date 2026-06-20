@@ -9,7 +9,8 @@ export default defineAppConfig({
     'pages/order-edit/index',
     'pages/client-edit/index',
     'pages/progress-add/index',
-    'pages/delivery-upload/index'
+    'pages/delivery-upload/index',
+    'pages/delivery-archive/index'
   ],
   window: {
     backgroundTextStyle: 'light',

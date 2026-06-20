@@ -34,6 +34,7 @@ export interface DeliveryFile {
   name: string;
   type: string;
   size: string;
+  fileUrl?: string;
   previewUrl?: string;
   uploadedAt: string;
 }

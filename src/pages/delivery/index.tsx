@@ -90,10 +90,21 @@ const DeliveryPage: React.FC = () => {
     return Math.round((order.paidAmount / order.price) * 100);
   };
 
+  const handleArchive = () => {
+    console.log('[DeliveryPage] Navigate to archive');
+    Taro.navigateTo({ url: '/pages/delivery-archive/index' });
+  };
+
   return (
     <View className={styles.page}>
       <View className={styles.header}>
-        <Text className={styles.headerTitle}>📦 文件交付</Text>
+        <View className={styles.headerRow}>
+          <Text className={styles.headerTitle}>📦 文件交付</Text>
+          <View className={styles.archiveBtn} onClick={handleArchive}>
+            <Text>🗂️</Text>
+            <Text>归档</Text>
+          </View>
+        </View>
         <Text className={styles.headerSub}>管理交付物与收款进度</Text>
         <View className={styles.overviewCards}>
           <View className={styles.overviewCard}>

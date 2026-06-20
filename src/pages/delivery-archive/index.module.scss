@@ -1,0 +1,279 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background-color: #f8f7ff;
+}
+
+.hero {
+  background: linear-gradient(135deg, #f97316 0%, #a855f7 50%, #7b5cff 100%);
+  padding: 48rpx 32rpx 64rpx;
+  color: #fff;
+
+  .heroBadge {
+    display: inline-flex;
+    align-items: center;
+    padding: 8rpx 24rpx;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 100rpx;
+    font-size: 24rpx;
+    font-weight: 500;
+    backdrop-filter: blur(10px);
+    margin-bottom: 24rpx;
+  }
+
+  .heroTitle {
+    display: block;
+    font-size: 44rpx;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 16rpx;
+  }
+
+  .heroStats {
+    display: flex;
+    gap: 24rpx;
+    margin-top: 24rpx;
+
+    .statBox {
+      flex: 1;
+      padding: 20rpx;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 16rpx;
+      backdrop-filter: blur(10px);
+
+      .statValue {
+        display: block;
+        font-size: 32rpx;
+        font-weight: 700;
+        margin-bottom: 4rpx;
+      }
+
+      .statLabel {
+        font-size: 22rpx;
+        opacity: 0.9;
+      }
+    }
+  }
+}
+
+.filterSection {
+  padding: 24rpx 32rpx 0;
+  margin-top: -32rpx;
+
+  .filterCard {
+    background: #fff;
+    border-radius: 24rpx;
+    padding: 24rpx;
+    box-shadow: 0 4rpx 24rpx rgba(123, 92, 255, 0.08);
+
+    .filterRow {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20rpx;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .filterLabel {
+        font-size: 24rpx;
+        color: #6b7280;
+        width: 120rpx;
+        flex-shrink: 0;
+      }
+
+      .filterChips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12rpx;
+        flex: 1;
+
+        .chip {
+          padding: 10rpx 24rpx;
+          background: #f3f4f6;
+          border-radius: 100rpx;
+          font-size: 24rpx;
+          color: #4b5563;
+          transition: all 0.2s ease;
+
+          &.active {
+            background: linear-gradient(135deg, #7b5cff 0%, #a855f7 100%);
+            color: #fff;
+            font-weight: 500;
+          }
+        }
+      }
+    }
+  }
+}
+
+.fileList {
+  padding: 24rpx 32rpx 100rpx;
+}
+
+.fileCard {
+  background: #fff;
+  border-radius: 24rpx;
+  overflow: hidden;
+  margin-bottom: 24rpx;
+  box-shadow: 0 4rpx 24rpx rgba(123, 92, 255, 0.06);
+  transition: transform 0.15s ease;
+
+  &:active {
+    transform: scale(0.99);
+  }
+
+  .fileCardHeader {
+    display: flex;
+    gap: 20rpx;
+    padding: 24rpx;
+
+    .fileThumb {
+      width: 160rpx;
+      height: 160rpx;
+      border-radius: 16rpx;
+      flex-shrink: 0;
+      overflow: hidden;
+      background: #f3f4f6;
+      position: relative;
+
+      .thumbImage {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .typeBadge {
+        position: absolute;
+        bottom: 8rpx;
+        left: 8rpx;
+        padding: 4rpx 12rpx;
+        background: rgba(0, 0, 0, 0.6);
+        color: #fff;
+        border-radius: 6rpx;
+        font-size: 20rpx;
+        font-weight: 600;
+        backdrop-filter: blur(4px);
+      }
+    }
+
+    .fileInfo {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+
+      .fileName {
+        font-size: 28rpx;
+        font-weight: 600;
+        color: #1f2937;
+        @include text-ellipsis;
+        line-height: 1.4;
+      }
+
+      .fileMeta {
+        font-size: 22rpx;
+        color: #9ca3af;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8rpx;
+
+        .dot {
+          color: #d1d5db;
+        }
+      }
+
+      .orderInfo {
+        font-size: 24rpx;
+        color: #6b7280;
+        @include text-ellipsis;
+      }
+    }
+  }
+
+  .fileCardBody {
+    padding: 0 24rpx 20rpx;
+    display: flex;
+    gap: 12rpx;
+
+    .infoTag {
+      padding: 8rpx 16rpx;
+      background: #f9fafb;
+      border-radius: 100rpx;
+      font-size: 22rpx;
+      color: #4b5563;
+      display: flex;
+      align-items: center;
+      gap: 6rpx;
+
+      &.payment-paid {
+        background: #ecfdf5;
+        color: #059669;
+      }
+
+      &.payment-partial {
+        background: #fffbeb;
+        color: #d97706;
+      }
+
+      &.payment-unpaid {
+        background: #fef2f2;
+        color: #dc2626;
+      }
+    }
+  }
+
+  .fileCardFooter {
+    display: flex;
+    border-top: 1rpx solid #f3f4f6;
+
+    .footerBtn {
+      flex: 1;
+      padding: 20rpx;
+      text-align: center;
+      font-size: 26rpx;
+      color: #6b7280;
+      font-weight: 500;
+      transition: all 0.15s ease;
+      border-right: 1rpx solid #f3f4f6;
+
+      &:last-child {
+        border-right: none;
+      }
+
+      &:active {
+        background: #f9fafb;
+        color: #7b5cff;
+      }
+
+      &.primary {
+        color: #7b5cff;
+      }
+    }
+  }
+}
+
+.emptyState {
+  padding: 120rpx 32rpx;
+  text-align: center;
+
+  .emptyIcon {
+    font-size: 100rpx;
+    margin-bottom: 24rpx;
+  }
+
+  .emptyText {
+    font-size: 28rpx;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 12rpx;
+  }
+
+  .emptySub {
+    font-size: 24rpx;
+    color: #9ca3af;
+    line-height: 1.6;
+  }
+}

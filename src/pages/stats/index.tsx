@@ -1,20 +1,27 @@
 import React, { useMemo } from 'react';
-import { View, Text, ScrollView } from '@tarojs/components';
+import { View, Text } from '@tarojs/components';
 import { useAppStore } from '@/store/useAppStore';
 import { ORDER_STATUS_MAP, OrderStatus } from '@/types';
 import { formatPrice, daysUntilDeadline } from '@/utils';
 import StatCard from '@/components/StatCard';
-import EmptyState from '@/components/EmptyState';
 import dayjs from 'dayjs';
 import styles from './index.module.scss';
 
 const StatsPage: React.FC = () => {
-  const { orders, monthlyStats, getOverdueOrders } = useAppStore();
+  const orders = useAppStore((s) => s.orders);
+  const getMonthlyStats = useAppStore((s) => s.getMonthlyStats);
+  const getOverdueOrders = useAppStore((s) => s.getOverdueOrders);
+  const getTotalRevenue = useAppStore((s) => s.getTotalRevenue);
+  const getPendingRevenue = useAppStore((s) => s.getPendingRevenue);
+  const getAvgOrderValue = useAppStore((s) => s.getAvgOrderValue);
+  const getStatusCounts = useAppStore((s) => s.getStatusCounts);
 
-  const totalRevenue = useMemo(
-    () => monthlyStats.reduce((sum, m) => sum + m.revenue, 0),
-    [monthlyStats]
-  );
+  const monthlyStats = useMemo(() => getMonthlyStats(), [orders, getMonthlyStats]);
+  const overdueOrders = useMemo(() => getOverdueOrders(), [orders, getOverdueOrders]);
+  const totalRevenue = useMemo(() => getTotalRevenue(), [orders, getTotalRevenue]);
+  const pendingRevenue = useMemo(() => getPendingRevenue(), [orders, getPendingRevenue]);
+  const avgOrderValue = useMemo(() => getAvgOrderValue(), [orders, getAvgOrderValue]);
+  const statusCounts = useMemo(() => getStatusCounts(), [orders, getStatusCounts]);
 
   const thisMonthRevenue = monthlyStats[monthlyStats.length - 1]?.revenue || 0;
   const lastMonthRevenue = monthlyStats[monthlyStats.length - 2]?.revenue || 0;
@@ -26,31 +33,8 @@ const StatsPage: React.FC = () => {
       : 0;
 
   const maxRevenue = useMemo(() => Math.max(...monthlyStats.map((m) => m.revenue), 1), [monthlyStats]);
-
   const currentMonth = dayjs().format('M月');
-
-  const statusCounts = useMemo(() => {
-    const counts: Record<OrderStatus, number> = {
-      consultation: 0,
-      draft: 0,
-      lineart: 0,
-      coloring: 0,
-      revision: 0,
-      delivered: 0
-    };
-    orders.forEach((o) => {
-      counts[o.status]++;
-    });
-    return counts;
-  }, [orders]);
-
-  const overdueOrders = getOverdueOrders();
-
-  const totalOrderCount = orders.length;
-  const avgOrderValue =
-    totalOrderCount > 0
-      ? Math.round(orders.filter((o) => o.status === 'delivered').reduce((sum, o) => sum + o.price, 0) / Math.max(1, statusCounts.delivered))
-      : 0;
+  const pendingCount = overdueOrders.length;
 
   return (
     <View className={styles.page}>
@@ -72,7 +56,7 @@ const StatsPage: React.FC = () => {
       <View className={styles.statCards}>
         <StatCard
           label='总订单'
-          value={totalOrderCount}
+          value={statusCounts.all}
           subLabel='累计接单数'
           color='#7B5CFF'
         />
@@ -97,37 +81,49 @@ const StatsPage: React.FC = () => {
             <Text>月度收入趋势</Text>
           </View>
           <View className={styles.chartTabs}>
-            <View className={styles.chartTab}>{/* 全部 */}</View>
             <View className={`${styles.chartTab} ${styles.chartTabActive}`}>近6个月</View>
           </View>
         </View>
 
-        <View className={styles.chartBars}>
-          {monthlyStats.map((m, i) => {
-            const heightPercent = (m.revenue / maxRevenue) * 100;
-            const monthLabel = dayjs(m.month).format('M月');
-            const isCurrent = i === monthlyStats.length - 1;
-            return (
-              <View key={m.month} className={styles.chartBarWrap}>
-                <Text className={styles.chartBarValue}>
-                  {m.revenue >= 10000
-                    ? `${(m.revenue / 10000).toFixed(1)}w`
-                    : `${(m.revenue / 1000).toFixed(0)}k`}
-                </Text>
-                <View
-                  className={`${styles.chartBar} ${isCurrent ? styles.chartBarCurrent : ''}`}
-                  style={{ height: `${Math.max(heightPercent, 3)}%` }}
-                />
-                <Text
-                  className={styles.chartBarLabel}
-                  style={isCurrent ? { color: '#7B5CFF', fontWeight: '600' } : {}}
-                >
-                  {monthLabel}
-                </Text>
-              </View>
-            );
-          })}
-        </View>
+        {maxRevenue > 1 ? (
+          <View className={styles.chartBars}>
+            {monthlyStats.map((m, i) => {
+              const heightPercent = (m.revenue / maxRevenue) * 100;
+              const monthLabel = m.month;
+              const isCurrent = i === monthlyStats.length - 1;
+              return (
+                <View key={m.month} className={styles.chartBarWrap}>
+                  <Text className={styles.chartBarValue}>
+                    {m.revenue >= 10000
+                      ? `${(m.revenue / 10000).toFixed(1)}w`
+                      : m.revenue >= 1000
+                      ? `${(m.revenue / 1000).toFixed(0)}k`
+                      : m.revenue > 0
+                      ? `¥${m.revenue}`
+                      : '-'}
+                  </Text>
+                  <View
+                    className={`${styles.chartBar} ${isCurrent ? styles.chartBarCurrent : ''}`}
+                    style={{ height: `${Math.max(heightPercent, m.revenue > 0 ? 5 : 2)}%` }}
+                  />
+                  <Text
+                    className={styles.chartBarLabel}
+                    style={isCurrent ? { color: '#7B5CFF', fontWeight: '600' } : {}}
+                  >
+                    {monthLabel}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+        ) : (
+          <View style={{ padding: '48rpx 0', textAlign: 'center' }}>
+            <Text style={{ fontSize: '56rpx' }}>📭</Text>
+            <View style={{ fontSize: '26rpx', color: '#9ca3af', marginTop: '12rpx' }}>
+              暂无已交付收入，完成订单后将显示趋势
+            </View>
+          </View>
+        )}
 
         <View className={styles.chartLegend}>
           <View className={styles.legendItem}>
@@ -138,13 +134,20 @@ const StatsPage: React.FC = () => {
             <View className={styles.legendDot} style={{ backgroundColor: '#FF8A65' }} />
             <Text className={styles.legendText}>当前月份（{currentMonth}）</Text>
           </View>
+          <View className={styles.legendItem}>
+            <View className={styles.legendDot} style={{ backgroundColor: '#F3F4F6' }} />
+            <Text className={styles.legendText}>待收 {formatPrice(pendingRevenue)}</Text>
+          </View>
         </View>
       </View>
 
       <View className={styles.statusSection}>
-        <View style={{ display: 'flex', alignItems: 'center', marginBottom: '24rpx' }}>
-          <Text style={{ fontSize: '28rpx', fontWeight: '600', color: '#1F2937', marginRight: '8rpx' }}>📋</Text>
-          <Text style={{ fontSize: '28rpx', fontWeight: '600', color: '#1F2937' }}>订单状态分布</Text>
+        <View style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24rpx' }}>
+          <View style={{ display: 'flex', alignItems: 'center' }}>
+            <Text style={{ fontSize: '28rpx', fontWeight: '600', color: '#1F2937', marginRight: '8rpx' }}>📋</Text>
+            <Text style={{ fontSize: '28rpx', fontWeight: '600', color: '#1F2937' }}>订单状态分布</Text>
+          </View>
+          <Text style={{ fontSize: '22rpx', color: '#9ca3af' }}>共 {statusCounts.all} 单</Text>
         </View>
         <View className={styles.statusGrid}>
           {(Object.keys(ORDER_STATUS_MAP) as OrderStatus[]).map((status) => (
@@ -161,9 +164,23 @@ const StatsPage: React.FC = () => {
       </View>
 
       <View className={styles.overdueSection}>
-        <View style={{ display: 'flex', alignItems: 'center', marginBottom: '24rpx' }}>
-          <Text style={{ fontSize: '28rpx', fontWeight: '600', color: '#1F2937', marginRight: '8rpx' }}>⚠️</Text>
-          <Text style={{ fontSize: '28rpx', fontWeight: '600', color: '#1F2937' }}>逾期订单预警</Text>
+        <View style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24rpx' }}>
+          <View style={{ display: 'flex', alignItems: 'center' }}>
+            <Text style={{ fontSize: '28rpx', fontWeight: '600', color: '#1F2937', marginRight: '8rpx' }}>⚠️</Text>
+            <Text style={{ fontSize: '28rpx', fontWeight: '600', color: '#1F2937' }}>逾期订单预警</Text>
+          </View>
+          {pendingCount > 0 && (
+            <Text style={{
+              fontSize: '22rpx',
+              fontWeight: '600',
+              color: '#fff',
+              backgroundColor: '#ef4444',
+              borderRadius: '100rpx',
+              padding: '6rpx 20rpx'
+            }}>
+              {pendingCount} 单
+            </Text>
+          )}
         </View>
 
         {overdueOrders.length > 0 ? (

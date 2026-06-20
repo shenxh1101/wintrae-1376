@@ -1,16 +1,25 @@
 import { create } from 'zustand';
 import Taro from '@tarojs/taro';
-import { Order, Client, Quote, OrderStatus, PaymentStatus, ProgressRecord, MonthlyStats } from '@/types';
-import { mockOrders, mockClients, mockQuotes, mockMonthlyStats } from '@/data/mockData';
+import {
+  Order,
+  Client,
+  Quote,
+  OrderStatus,
+  PaymentStatus,
+  ProgressRecord,
+  MonthlyStats,
+  DeliveryFile
+} from '@/types';
+import { mockOrders, mockClients, mockQuotes } from '@/data/mockData';
 import { generateId } from '../utils';
+import dayjs from 'dayjs';
 
-const STORAGE_KEY = 'illustrator_app_store_v1';
+const STORAGE_KEY = 'illustrator_app_store_v2';
 
 interface PersistedState {
   orders: Order[];
   clients: Client[];
   quotes: Quote[];
-  monthlyStats: MonthlyStats[];
 }
 
 const loadPersistedState = (): PersistedState | null => {
@@ -37,11 +46,43 @@ const savePersistedState = (state: PersistedState): void => {
 
 const persisted = loadPersistedState();
 
+const getMonthKey = (date: Date | string): string => {
+  return dayjs(date).format('YYYY-MM');
+};
+
+const computeMonthlyStats = (orders: Order[]): MonthlyStats[] => {
+  const monthMap: Record<string, MonthlyStats> = {};
+  const now = dayjs();
+
+  for (let i = 5; i >= 0; i--) {
+    const d = now.subtract(i, 'month');
+    const key = d.format('YYYY-MM');
+    const label = d.format('M月');
+    monthMap[key] = { month: label, revenue: 0, orderCount: 0 };
+  }
+
+  orders.forEach((o) => {
+    if (o.status === 'delivered' && o.paidAmount > 0) {
+      const key = getMonthKey(o.updatedAt);
+      if (monthMap[key]) {
+        monthMap[key].revenue += o.paidAmount;
+        monthMap[key].orderCount += 1;
+      } else {
+        const label = dayjs(o.updatedAt).format('M月');
+        monthMap[key] = { month: label, revenue: o.paidAmount, orderCount: 1 };
+      }
+    }
+  });
+
+  return Object.values(monthMap).sort((a, b) => {
+    return dayjs(a.month, 'M月').valueOf() - dayjs(b.month, 'M月').valueOf();
+  }).slice(-6);
+};
+
 interface AppState {
   orders: Order[];
   clients: Client[];
   quotes: Quote[];
-  monthlyStats: MonthlyStats[];
   currentOrderFilter: OrderStatus | 'all';
   searchKeyword: string;
 
@@ -53,7 +94,7 @@ interface AppState {
   updateOrderStatus: (id: string, status: OrderStatus) => void;
   updatePaymentStatus: (id: string, status: PaymentStatus, paidAmount?: number) => void;
   addProgressRecord: (orderId: string, record: Omit<ProgressRecord, 'id' | 'createdAt'>) => void;
-  addDeliveryFile: (orderId: string, file: Omit<import('@/types').DeliveryFile, 'id' | 'uploadedAt'>) => void;
+  addDeliveryFile: (orderId: string, file: Omit<DeliveryFile, 'id' | 'uploadedAt'>) => void;
 
   addClient: (client: Omit<Client, 'id' | 'createdAt' | 'orderCount' | 'totalRevenue'>) => void;
   updateClient: (id: string, updates: Partial<Client>) => void;
@@ -67,6 +108,18 @@ interface AppState {
   getOverdueOrders: () => Order[];
   getTotalRevenue: () => number;
   getPendingRevenue: () => number;
+  getMonthlyStats: () => MonthlyStats[];
+  getDeliveredFiles: (filters?: { clientId?: string; orderId?: string }) => (DeliveryFile & {
+    orderTitle: string;
+    clientId: string;
+    clientName: string;
+    orderStatus: OrderStatus;
+    paymentStatus: PaymentStatus;
+    paidAmount: number;
+    orderPrice: number;
+  })[];
+  getAvgOrderValue: () => number;
+  getStatusCounts: () => Record<OrderStatus, number> & { all: number };
 
   resetToMockData: () => void;
 }
@@ -75,8 +128,7 @@ const persist = (state: AppState) => {
   savePersistedState({
     orders: state.orders,
     clients: state.clients,
-    quotes: state.quotes,
-    monthlyStats: state.monthlyStats
+    quotes: state.quotes
   });
 };
 
@@ -84,7 +136,6 @@ export const useAppStore = create<AppState>((set, get) => ({
   orders: persisted?.orders || mockOrders,
   clients: persisted?.clients || mockClients,
   quotes: persisted?.quotes || mockQuotes,
-  monthlyStats: persisted?.monthlyStats || mockMonthlyStats,
   currentOrderFilter: 'all',
   searchKeyword: '',
 
@@ -93,34 +144,56 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   addOrder: (order) =>
     set((state) => {
-      const newState = {
-        orders: [
-          {
-            ...order,
-            id: generateId(),
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-          },
-          ...state.orders
-        ]
+      const newOrder: Order = {
+        ...order,
+        id: generateId(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       };
+      const newState = { orders: [newOrder, ...state.orders] };
+
+      if (newOrder.clientId && !newOrder.clientId.startsWith('temp-')) {
+        const client = state.clients.find((c) => c.id === newOrder.clientId);
+        if (client) {
+          newState.clients = state.clients.map((c) =>
+            c.id === newOrder.clientId
+              ? { ...c, orderCount: c.orderCount + 1 }
+              : c
+          );
+        }
+      }
+
       persist({ ...state, ...newState });
       return newState;
     }),
 
   updateOrder: (id, updates) =>
     set((state) => {
+      const oldOrder = state.orders.find((o) => o.id === id);
       const newState = {
         orders: state.orders.map((o) =>
           o.id === id ? { ...o, ...updates, updatedAt: new Date().toISOString() } : o
         )
       };
+
+      if (updates.price !== undefined && oldOrder) {
+        const priceDiff = updates.price - oldOrder.price;
+        if (oldOrder.status === 'delivered' && oldOrder.clientId && !oldOrder.clientId.startsWith('temp-')) {
+          newState.clients = state.clients.map((c) =>
+            c.id === oldOrder.clientId
+              ? { ...c, totalRevenue: Math.max(0, c.totalRevenue + priceDiff) }
+              : c
+          );
+        }
+      }
+
       persist({ ...state, ...newState });
       return newState;
     }),
 
   updateOrderStatus: (id, status) =>
     set((state) => {
+      const oldOrder = state.orders.find((o) => o.id === id);
       const progressMap: Record<OrderStatus, number> = {
         consultation: 10,
         draft: 25,
@@ -129,6 +202,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         revision: 85,
         delivered: 100
       };
+
       const newState = {
         orders: state.orders.map((o) =>
           o.id === id
@@ -141,24 +215,56 @@ export const useAppStore = create<AppState>((set, get) => ({
             : o
         )
       };
+
+      if (oldOrder && oldOrder.status !== 'delivered' && status === 'delivered') {
+        if (oldOrder.clientId && !oldOrder.clientId.startsWith('temp-')) {
+          newState.clients = state.clients.map((c) =>
+            c.id === oldOrder.clientId
+              ? { ...c, totalRevenue: c.totalRevenue + oldOrder.paidAmount }
+              : c
+          );
+        }
+      } else if (oldOrder && oldOrder.status === 'delivered' && status !== 'delivered') {
+        if (oldOrder.clientId && !oldOrder.clientId.startsWith('temp-')) {
+          newState.clients = state.clients.map((c) =>
+            c.id === oldOrder.clientId
+              ? { ...c, totalRevenue: Math.max(0, c.totalRevenue - oldOrder.paidAmount) }
+              : c
+          );
+        }
+      }
+
       persist({ ...state, ...newState });
       return newState;
     }),
 
   updatePaymentStatus: (id, status, paidAmount) =>
     set((state) => {
+      const oldOrder = state.orders.find((o) => o.id === id);
+      const newPaid = paidAmount ?? (status === 'paid' ? (oldOrder?.price || 0) : status === 'unpaid' ? 0 : (oldOrder?.paidAmount || 0));
+      const paidDiff = oldOrder ? newPaid - oldOrder.paidAmount : 0;
+
       const newState = {
         orders: state.orders.map((o) =>
           o.id === id
             ? {
                 ...o,
                 paymentStatus: status,
-                paidAmount: paidAmount ?? (status === 'paid' ? o.price : status === 'unpaid' ? 0 : o.paidAmount),
+                paidAmount: newPaid,
                 updatedAt: new Date().toISOString()
               }
             : o
         )
       };
+
+      if (oldOrder && oldOrder.status === 'delivered' && paidDiff !== 0 && oldOrder.clientId && !oldOrder.clientId.startsWith('temp-')) {
+        newState.clients = state.clients.map((c) =>
+          c.id === oldOrder.clientId
+            ? { ...c, totalRevenue: Math.max(0, c.totalRevenue + paidDiff) }
+            : c
+        );
+      }
+
       persist({ ...state, ...newState });
       return newState;
     }),
@@ -293,13 +399,73 @@ export const useAppStore = create<AppState>((set, get) => ({
   getPendingRevenue: () =>
     get().orders.reduce((sum, o) => sum + (o.price - o.paidAmount), 0),
 
+  getMonthlyStats: () => computeMonthlyStats(get().orders),
+
+  getDeliveredFiles: (filters = {}) => {
+    const { orders } = get();
+    const result: (DeliveryFile & {
+      orderTitle: string;
+      clientId: string;
+      clientName: string;
+      orderStatus: OrderStatus;
+      paymentStatus: PaymentStatus;
+      paidAmount: number;
+      orderPrice: number;
+    })[] = [];
+
+    orders.forEach((o) => {
+      if (filters.orderId && o.id !== filters.orderId) return;
+      if (filters.clientId && o.clientId !== filters.clientId) return;
+
+      o.deliveryFiles.forEach((f) => {
+        result.push({
+          ...f,
+          orderTitle: o.title,
+          clientId: o.clientId,
+          clientName: o.clientName,
+          orderStatus: o.status,
+          paymentStatus: o.paymentStatus,
+          paidAmount: o.paidAmount,
+          orderPrice: o.price
+        });
+      });
+    });
+
+    return result.sort(
+      (a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()
+    );
+  },
+
+  getAvgOrderValue: () => {
+    const { orders } = get();
+    const delivered = orders.filter((o) => o.status === 'delivered');
+    if (delivered.length === 0) return 0;
+    const total = delivered.reduce((sum, o) => sum + o.paidAmount, 0);
+    return Math.round(total / delivered.length);
+  },
+
+  getStatusCounts: () => {
+    const { orders } = get();
+    const counts: Record<OrderStatus, number> = {
+      consultation: 0,
+      draft: 0,
+      lineart: 0,
+      coloring: 0,
+      revision: 0,
+      delivered: 0
+    };
+    orders.forEach((o) => {
+      counts[o.status] = (counts[o.status] || 0) + 1;
+    });
+    return { ...counts, all: orders.length };
+  },
+
   resetToMockData: () =>
     set(() => {
       const newState = {
         orders: mockOrders,
         clients: mockClients,
-        quotes: mockQuotes,
-        monthlyStats: mockMonthlyStats
+        quotes: mockQuotes
       };
       Taro.removeStorageSync(STORAGE_KEY);
       return newState;
