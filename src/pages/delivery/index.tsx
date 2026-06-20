@@ -77,7 +77,7 @@ const DeliveryPage: React.FC = () => {
 
   const handleUploadFile = (orderId: string) => {
     console.log('[DeliveryPage] Upload file for order:', orderId);
-    Taro.showToast({ title: '文件上传功能', icon: 'none' });
+    Taro.navigateTo({ url: `/pages/delivery-upload/index?orderId=${orderId}` });
   };
 
   const handleViewDetail = (orderId: string) => {

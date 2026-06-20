@@ -1,8 +1,41 @@
 import { create } from 'zustand';
-import { Order, Client, Quote, OrderStatus, PaymentStatus, ProgressRecord } from '@/types';
+import Taro from '@tarojs/taro';
+import { Order, Client, Quote, OrderStatus, PaymentStatus, ProgressRecord, MonthlyStats } from '@/types';
 import { mockOrders, mockClients, mockQuotes, mockMonthlyStats } from '@/data/mockData';
-import { MonthlyStats } from '../types';
 import { generateId } from '../utils';
+
+const STORAGE_KEY = 'illustrator_app_store_v1';
+
+interface PersistedState {
+  orders: Order[];
+  clients: Client[];
+  quotes: Quote[];
+  monthlyStats: MonthlyStats[];
+}
+
+const loadPersistedState = (): PersistedState | null => {
+  try {
+    const data = Taro.getStorageSync(STORAGE_KEY);
+    if (data) {
+      const parsed = typeof data === 'string' ? JSON.parse(data) : data;
+      return parsed as PersistedState;
+    }
+    return null;
+  } catch (e) {
+    console.warn('[store] Failed to load persisted state:', e);
+    return null;
+  }
+};
+
+const savePersistedState = (state: PersistedState): void => {
+  try {
+    Taro.setStorageSync(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {
+    console.warn('[store] Failed to persist state:', e);
+  }
+};
+
+const persisted = loadPersistedState();
 
 interface AppState {
   orders: Order[];
@@ -20,6 +53,7 @@ interface AppState {
   updateOrderStatus: (id: string, status: OrderStatus) => void;
   updatePaymentStatus: (id: string, status: PaymentStatus, paidAmount?: number) => void;
   addProgressRecord: (orderId: string, record: Omit<ProgressRecord, 'id' | 'createdAt'>) => void;
+  addDeliveryFile: (orderId: string, file: Omit<import('@/types').DeliveryFile, 'id' | 'uploadedAt'>) => void;
 
   addClient: (client: Omit<Client, 'id' | 'createdAt' | 'orderCount' | 'totalRevenue'>) => void;
   updateClient: (id: string, updates: Partial<Client>) => void;
@@ -33,13 +67,24 @@ interface AppState {
   getOverdueOrders: () => Order[];
   getTotalRevenue: () => number;
   getPendingRevenue: () => number;
+
+  resetToMockData: () => void;
 }
 
+const persist = (state: AppState) => {
+  savePersistedState({
+    orders: state.orders,
+    clients: state.clients,
+    quotes: state.quotes,
+    monthlyStats: state.monthlyStats
+  });
+};
+
 export const useAppStore = create<AppState>((set, get) => ({
-  orders: mockOrders,
-  clients: mockClients,
-  quotes: mockQuotes,
-  monthlyStats: mockMonthlyStats,
+  orders: persisted?.orders || mockOrders,
+  clients: persisted?.clients || mockClients,
+  quotes: persisted?.quotes || mockQuotes,
+  monthlyStats: persisted?.monthlyStats || mockMonthlyStats,
   currentOrderFilter: 'all',
   searchKeyword: '',
 
@@ -47,112 +92,169 @@ export const useAppStore = create<AppState>((set, get) => ({
   setSearchKeyword: (keyword) => set({ searchKeyword: keyword }),
 
   addOrder: (order) =>
-    set((state) => ({
-      orders: [
-        {
-          ...order,
-          id: generateId(),
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        },
-        ...state.orders
-      ]
-    })),
+    set((state) => {
+      const newState = {
+        orders: [
+          {
+            ...order,
+            id: generateId(),
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          },
+          ...state.orders
+        ]
+      };
+      persist({ ...state, ...newState });
+      return newState;
+    }),
 
   updateOrder: (id, updates) =>
-    set((state) => ({
-      orders: state.orders.map((o) =>
-        o.id === id ? { ...o, ...updates, updatedAt: new Date().toISOString() } : o
-      )
-    })),
+    set((state) => {
+      const newState = {
+        orders: state.orders.map((o) =>
+          o.id === id ? { ...o, ...updates, updatedAt: new Date().toISOString() } : o
+        )
+      };
+      persist({ ...state, ...newState });
+      return newState;
+    }),
 
   updateOrderStatus: (id, status) =>
-    set((state) => ({
-      orders: state.orders.map((o) => {
-        if (o.id !== id) return o;
-        const progressMap: Record<OrderStatus, number> = {
-          consultation: 10,
-          draft: 25,
-          lineart: 45,
-          coloring: 70,
-          revision: 85,
-          delivered: 100
-        };
-        return {
-          ...o,
-          status,
-          progress: progressMap[status],
-          updatedAt: new Date().toISOString()
-        };
-      })
-    })),
+    set((state) => {
+      const progressMap: Record<OrderStatus, number> = {
+        consultation: 10,
+        draft: 25,
+        lineart: 45,
+        coloring: 70,
+        revision: 85,
+        delivered: 100
+      };
+      const newState = {
+        orders: state.orders.map((o) =>
+          o.id === id
+            ? {
+                ...o,
+                status,
+                progress: progressMap[status],
+                updatedAt: new Date().toISOString()
+              }
+            : o
+        )
+      };
+      persist({ ...state, ...newState });
+      return newState;
+    }),
 
   updatePaymentStatus: (id, status, paidAmount) =>
-    set((state) => ({
-      orders: state.orders.map((o) =>
-        o.id === id
-          ? {
-              ...o,
-              paymentStatus: status,
-              paidAmount: paidAmount ?? (status === 'paid' ? o.price : status === 'unpaid' ? 0 : o.paidAmount),
-              updatedAt: new Date().toISOString()
-            }
-          : o
-      )
-    })),
+    set((state) => {
+      const newState = {
+        orders: state.orders.map((o) =>
+          o.id === id
+            ? {
+                ...o,
+                paymentStatus: status,
+                paidAmount: paidAmount ?? (status === 'paid' ? o.price : status === 'unpaid' ? 0 : o.paidAmount),
+                updatedAt: new Date().toISOString()
+              }
+            : o
+        )
+      };
+      persist({ ...state, ...newState });
+      return newState;
+    }),
 
   addProgressRecord: (orderId, record) =>
-    set((state) => ({
-      orders: state.orders.map((o) =>
-        o.id === orderId
-          ? {
-              ...o,
-              progressRecords: [
-                ...o.progressRecords,
-                { ...record, id: generateId(), createdAt: new Date().toISOString() }
-              ],
-              revisionCount: record.revisionCount > 0 ? o.revisionCount + record.revisionCount : o.revisionCount,
-              updatedAt: new Date().toISOString()
-            }
-          : o
-      )
-    })),
+    set((state) => {
+      const newState = {
+        orders: state.orders.map((o) =>
+          o.id === orderId
+            ? {
+                ...o,
+                progressRecords: [
+                  ...o.progressRecords,
+                  { ...record, id: generateId(), createdAt: new Date().toISOString() }
+                ],
+                revisionCount: record.revisionCount > 0 ? o.revisionCount + record.revisionCount : o.revisionCount,
+                updatedAt: new Date().toISOString()
+              }
+            : o
+        )
+      };
+      persist({ ...state, ...newState });
+      return newState;
+    }),
+
+  addDeliveryFile: (orderId, file) =>
+    set((state) => {
+      const newState = {
+        orders: state.orders.map((o) =>
+          o.id === orderId
+            ? {
+                ...o,
+                deliveryFiles: [
+                  ...o.deliveryFiles,
+                  { ...file, id: generateId(), uploadedAt: new Date().toISOString() }
+                ],
+                updatedAt: new Date().toISOString()
+              }
+            : o
+        )
+      };
+      persist({ ...state, ...newState });
+      return newState;
+    }),
 
   addClient: (client) =>
-    set((state) => ({
-      clients: [
-        {
-          ...client,
-          id: generateId(),
-          createdAt: new Date().toISOString(),
-          orderCount: 0,
-          totalRevenue: 0
-        },
-        ...state.clients
-      ]
-    })),
+    set((state) => {
+      const newState = {
+        clients: [
+          {
+            ...client,
+            id: generateId(),
+            createdAt: new Date().toISOString(),
+            orderCount: 0,
+            totalRevenue: 0
+          },
+          ...state.clients
+        ]
+      };
+      persist({ ...state, ...newState });
+      return newState;
+    }),
 
   updateClient: (id, updates) =>
-    set((state) => ({
-      clients: state.clients.map((c) => (c.id === id ? { ...c, ...updates } : c))
-    })),
+    set((state) => {
+      const newState = {
+        clients: state.clients.map((c) => (c.id === id ? { ...c, ...updates } : c))
+      };
+      persist({ ...state, ...newState });
+      return newState;
+    }),
 
   addQuote: (quote) =>
-    set((state) => ({
-      quotes: [
-        {
-          ...quote,
-          id: generateId(),
-          createdAt: new Date().toISOString()
-        },
-        ...state.quotes
-      ]
-    })),
+    set((state) => {
+      const newState = {
+        quotes: [
+          {
+            ...quote,
+            id: generateId(),
+            createdAt: new Date().toISOString()
+          },
+          ...state.quotes
+        ]
+      };
+      persist({ ...state, ...newState });
+      return newState;
+    }),
 
   updateQuoteStatus: (id, status) =>
-    set((state) => ({
-      quotes: state.quotes.map((q) => (q.id === id ? { ...q, status } : q))
-    })),
+    set((state) => {
+      const newState = {
+        quotes: state.quotes.map((q) => (q.id === id ? { ...q, status } : q))
+      };
+      persist({ ...state, ...newState });
+      return newState;
+    }),
 
   getFilteredOrders: () => {
     const { orders, currentOrderFilter, searchKeyword } = get();
@@ -189,5 +291,17 @@ export const useAppStore = create<AppState>((set, get) => ({
       .reduce((sum, o) => sum + o.paidAmount, 0),
 
   getPendingRevenue: () =>
-    get().orders.reduce((sum, o) => sum + (o.price - o.paidAmount), 0)
+    get().orders.reduce((sum, o) => sum + (o.price - o.paidAmount), 0),
+
+  resetToMockData: () =>
+    set(() => {
+      const newState = {
+        orders: mockOrders,
+        clients: mockClients,
+        quotes: mockQuotes,
+        monthlyStats: mockMonthlyStats
+      };
+      Taro.removeStorageSync(STORAGE_KEY);
+      return newState;
+    })
 }));

@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { View, Text, Input, Textarea, Button, Picker } from '@tarojs/components';
-import Taro, { useRouter } from '@tarojs/taro';
+import Taro, { useRouter, useDidShow } from '@tarojs/taro';
 import { useAppStore } from '@/store/useAppStore';
 import {
   OrderStatus,
@@ -54,7 +54,7 @@ const OrderEditPage: React.FC = () => {
   }, [clientId, clients, customClientName]);
 
   const clientOptions = useMemo(() => {
-    return clients.map((c) => c.name).concat(['+ 新建客户']);
+    return clients.map((c) => c.name);
   }, [clients]);
 
   const quoteBreakdown = useMemo(() => {
@@ -72,28 +72,26 @@ const OrderEditPage: React.FC = () => {
     }
   }, [isEdit, existingClient, clients]);
 
+  useDidShow(() => {
+    if (customClientName) return;
+    if (clientId) {
+      const idx = clients.findIndex((c) => c.id === clientId);
+      if (idx >= 0) setClientPickerIndex(idx);
+    }
+  });
+
   const handleClientChange = (e) => {
     const idx = parseInt(e.detail.value);
     setClientPickerIndex(idx);
     if (idx < clients.length) {
       setClientId(clients[idx].id);
       setCustomClientName('');
-    } else {
-      setClientId('');
-      Taro.showModal({
-        title: '新建客户',
-        editable: true,
-        placeholderText: '请输入客户名称',
-        success: (res) => {
-          if (res.confirm && res.content) {
-            setCustomClientName(res.content);
-          } else {
-            setClientPickerIndex(0);
-            if (clients.length > 0) setClientId(clients[0].id);
-          }
-        }
-      });
     }
+  };
+
+  const handleAddClient = () => {
+    console.log('[OrderEdit] Navigate to add client');
+    Taro.navigateTo({ url: '/pages/client-edit/index?from=picker' });
   };
 
   const handleDateChange = (e) => {
@@ -231,6 +229,9 @@ const OrderEditPage: React.FC = () => {
                 <Text className={styles.pickerArrow}>▼</Text>
               </View>
             </Picker>
+            <View className={styles.addClientBtn} onClick={handleAddClient}>
+              ＋ 新建客户
+            </View>
           </View>
 
           <View className={styles.formGroup}>

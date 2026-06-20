@@ -40,7 +40,12 @@ const ClientsPage: React.FC = () => {
 
   const handleAddClient = () => {
     console.log('[ClientsPage] Add new client');
-    Taro.showToast({ title: '新建客户功能', icon: 'none' });
+    Taro.navigateTo({ url: '/pages/client-edit/index' });
+  };
+
+  const handleClientClick = (clientId: string) => {
+    console.log('[ClientsPage] Click client:', clientId);
+    Taro.navigateTo({ url: `/pages/client-edit/index?id=${clientId}` });
   };
 
   return (
@@ -84,7 +89,11 @@ const ClientsPage: React.FC = () => {
         </View>
 
         {sortedClients.length > 0 ? (
-          sortedClients.map((client) => <ClientCard key={client.id} client={client} />)
+          sortedClients.map((client) => (
+            <View key={client.id} onClick={() => handleClientClick(client.id)}>
+              <ClientCard client={client} />
+            </View>
+          ))
         ) : (
           <EmptyState
             title={searchKeyword ? '没有匹配的客户' : '暂无客户'}

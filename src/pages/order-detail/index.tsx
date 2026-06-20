@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import { View, Text, Button } from '@tarojs/components';
-import Taro, { useRouter } from '@tarojs/taro';
+import { View, Text, Button, Image } from '@tarojs/components';
+import Taro, { useRouter, useDidShow } from '@tarojs/taro';
 import { useAppStore } from '@/store/useAppStore';
 import {
   ORDER_STATUS_MAP,
@@ -21,6 +21,11 @@ const OrderDetailPage: React.FC = () => {
   const { getOrderById, updateOrderStatus } = useAppStore();
 
   const order = useMemo(() => (orderId ? getOrderById(orderId) : undefined), [orderId, getOrderById]);
+
+  useDidShow(() => {
+    // 页面显示时强制刷新，确保新添加的进度/文件立即可见
+    console.log('[OrderDetail] Page did show, orderId:', orderId);
+  });
 
   if (!order) {
     return (
@@ -62,6 +67,16 @@ const OrderDetailPage: React.FC = () => {
   const handleEdit = () => {
     console.log('[OrderDetail] Navigate to edit order:', order.id);
     Taro.navigateTo({ url: `/pages/order-edit/index?id=${order.id}` });
+  };
+
+  const handleAddProgress = () => {
+    console.log('[OrderDetail] Navigate to add progress:', order.id);
+    Taro.navigateTo({ url: `/pages/progress-add/index?orderId=${order.id}` });
+  };
+
+  const handleUploadDelivery = () => {
+    console.log('[OrderDetail] Navigate to upload delivery:', order.id);
+    Taro.navigateTo({ url: `/pages/delivery-upload/index?orderId=${order.id}` });
   };
 
   return (
@@ -161,9 +176,14 @@ const OrderDetailPage: React.FC = () => {
         </View>
 
         <View className={styles.infoCard}>
-          <View className={styles.cardTitle}>
-            <Text className={styles.cardTitleIcon}>⏱️</Text>
-            <Text>进度记录</Text>
+          <View className={styles.cardTitleRow}>
+            <View className={styles.cardTitle}>
+              <Text className={styles.cardTitleIcon}>⏱️</Text>
+              <Text>进度记录</Text>
+            </View>
+            <View className={styles.addBtn} onClick={handleAddProgress}>
+              <Text>＋ 新增</Text>
+            </View>
           </View>
           <View className={styles.timeline}>
             {sortedRecords.map((record, idx) => (
@@ -195,6 +215,51 @@ const OrderDetailPage: React.FC = () => {
               </View>
             ))}
           </View>
+        </View>
+
+        <View className={styles.infoCard}>
+          <View className={styles.cardTitleRow}>
+            <View className={styles.cardTitle}>
+              <Text className={styles.cardTitleIcon}>📁</Text>
+              <Text>交付文件</Text>
+            </View>
+            <View className={styles.addBtn} onClick={handleUploadDelivery}>
+              <Text>＋ 上传</Text>
+            </View>
+          </View>
+          {order.deliveryFiles.length > 0 ? (
+            <View className={styles.deliveryList}>
+              {order.deliveryFiles.map((file) => (
+                <View key={file.id} className={styles.deliveryItem}>
+                  <View className={styles.deliveryThumb}>
+                    {file.previewUrl ? (
+                      <Image className={styles.thumbImage} src={file.previewUrl} mode='aspectFill' />
+                    ) : (
+                      <View style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '36rpx' }}>
+                        📄
+                      </View>
+                    )}
+                  </View>
+                  <View className={styles.deliveryInfo}>
+                    <Text className={styles.deliveryName}>{file.name}</Text>
+                    <View className={styles.deliveryMeta}>
+                      <Text>{file.type?.toUpperCase()}</Text>
+                      <Text>·</Text>
+                      <Text>{file.size}</Text>
+                    </View>
+                  </View>
+                  <View className={styles.downloadBtn}>下载</View>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <View style={{ padding: '48rpx 0', textAlign: 'center' }}>
+              <Text style={{ fontSize: '60rpx' }}>📦</Text>
+              <View style={{ fontSize: '26rpx', color: '#9ca3af', marginTop: '12rpx' }}>
+                暂无交付文件，点击右上角上传
+              </View>
+            </View>
+          )}
         </View>
       </View>
 

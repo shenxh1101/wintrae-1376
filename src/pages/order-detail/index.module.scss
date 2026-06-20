@@ -63,8 +63,91 @@
   gap: $spacing-xs;
 }
 
+.cardTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.cardTitle {
+  margin-bottom: 0;
+}
+
 .cardTitleIcon {
   font-size: 28rpx;
+}
+
+.addBtn {
+  padding: 10rpx 20rpx;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  border-radius: $radius-round;
+  font-size: 22rpx;
+  font-weight: $font-weight-medium;
+  color: $color-text-white;
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+}
+
+.deliveryList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.deliveryItem {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-sm;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+
+  .deliveryThumb {
+    width: 100rpx;
+    height: 100rpx;
+    border-radius: $radius-sm;
+    background: $color-bg-card;
+    overflow: hidden;
+    flex-shrink: 0;
+
+    .thumbImage {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .deliveryInfo {
+    flex: 1;
+    min-width: 0;
+
+    .deliveryName {
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
+      color: $color-text-primary;
+      @include text-ellipsis;
+      margin-bottom: 6rpx;
+    }
+
+    .deliveryMeta {
+      font-size: 20rpx;
+      color: $color-text-tertiary;
+      display: flex;
+      gap: $spacing-sm;
+    }
+  }
+
+  .downloadBtn {
+    padding: 12rpx 20rpx;
+    background: $color-primary-bg;
+    border-radius: $radius-round;
+    font-size: 22rpx;
+    color: $color-primary;
+    font-weight: $font-weight-medium;
+    flex-shrink: 0;
+  }
 }
 
 .infoGrid {
