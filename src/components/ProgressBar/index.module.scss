@@ -1,0 +1,31 @@
+@use '@/styles/variables.scss' as *;
+
+.container {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  width: 100%;
+}
+
+.barOuter {
+  flex: 1;
+  height: 12rpx;
+  background-color: $color-bg-hover;
+  border-radius: $radius-round;
+  overflow: hidden;
+}
+
+.barInner {
+  height: 100%;
+  background: linear-gradient(90deg, $color-primary 0%, $color-primary-light 100%);
+  border-radius: $radius-round;
+  transition: width $transition-base ease;
+}
+
+.label {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+  min-width: 64rpx;
+  text-align: right;
+}

@@ -1,0 +1,144 @@
+@use '@/styles/variables.scss' as *;
+
+.card {
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.92;
+    transform: scale(0.995);
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  flex-wrap: wrap;
+}
+
+.deadline {
+  display: inline-flex;
+  align-items: center;
+  gap: 4rpx;
+  padding: 4rpx 12rpx;
+  background-color: $color-info-bg;
+  border-radius: $radius-xs;
+}
+
+.deadlineOverdue {
+  background-color: $color-error-bg;
+  .deadlineText {
+    color: $color-error;
+  }
+}
+
+.deadlineUrgent {
+  background-color: $color-warning-bg;
+  .deadlineText {
+    color: $color-warning;
+  }
+}
+
+.deadlineIcon {
+  font-size: 20rpx;
+}
+
+.deadlineText {
+  font-size: 20rpx;
+  color: $color-info;
+  font-weight: $font-weight-medium;
+}
+
+.price {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-price;
+}
+
+.title {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  line-height: $line-height-normal;
+  margin-bottom: $spacing-md;
+  @include text-ellipsis;
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  background-color: $color-bg-page;
+  border-radius: $radius-sm;
+  padding: $spacing-sm $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.metaItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.metaDivider {
+  width: 1rpx;
+  height: 48rpx;
+  background-color: $color-border;
+  margin: 0 $spacing-md;
+}
+
+.metaLabel {
+  font-size: 20rpx;
+  color: $color-text-tertiary;
+}
+
+.metaValue {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+  @include text-ellipsis;
+}
+
+.progressSection {
+  margin-bottom: $spacing-md;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+}
+
+.footerItem {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+}
+
+.footerIcon {
+  font-size: 22rpx;
+}
+
+.footerText {
+  font-size: 22rpx;
+  color: $color-text-secondary;
+}
+
+.footerDate {
+  font-size: 20rpx;
+  color: $color-text-tertiary;
+}

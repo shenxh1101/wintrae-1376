@@ -1,0 +1,134 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, $color-primary-bg 0%, $color-bg-page 30%);
+  padding-bottom: 120rpx;
+}
+
+.header {
+  padding: $spacing-lg $page-padding $spacing-md;
+}
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-lg;
+}
+
+.greeting {
+  flex: 1;
+}
+
+.greetingTitle {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  line-height: 1.3;
+  margin-bottom: 4rpx;
+}
+
+.greetingSub {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.addBtn {
+  @include button-reset;
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: $radius-round;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(123, 92, 255, 0.3);
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.95);
+  }
+}
+
+.addBtnIcon {
+  font-size: 40rpx;
+  color: $color-text-white;
+  line-height: 1;
+}
+
+.searchBox {
+  display: flex;
+  align-items: center;
+  background-color: $color-bg-card;
+  border-radius: $radius-button;
+  padding: 0 $spacing-lg;
+  height: 80rpx;
+  box-shadow: $shadow-card;
+}
+
+.searchIcon {
+  font-size: 32rpx;
+  margin-right: $spacing-sm;
+}
+
+.searchInput {
+  flex: 1;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  height: 80rpx;
+}
+
+.statsRow {
+  display: flex;
+  gap: $spacing-md;
+  padding: 0 $page-padding;
+  margin-bottom: $spacing-lg;
+}
+
+.filterSection {
+  padding: 0 $page-padding;
+  margin-bottom: $spacing-md;
+}
+
+.filterScroll {
+  white-space: nowrap;
+}
+
+.filterItem {
+  @include scroll-x-item(auto);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12rpx 28rpx;
+  border-radius: $radius-button;
+  margin-right: $spacing-sm;
+  background-color: $color-bg-card;
+  transition: all $transition-base;
+}
+
+.filterItemActive {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  box-shadow: 0 4rpx 16rpx rgba(123, 92, 255, 0.25);
+}
+
+.filterText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+  white-space: nowrap;
+}
+
+.filterTextActive {
+  color: $color-text-white;
+}
+
+.filterCount {
+  font-size: 20rpx;
+  margin-left: 6rpx;
+  opacity: 0.8;
+}
+
+.orderList {
+  padding: 0 $page-padding;
+}

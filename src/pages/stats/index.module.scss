@@ -1,0 +1,324 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background-color: $color-bg-page;
+  padding-bottom: 120rpx;
+}
+
+.heroHeader {
+  background: linear-gradient(135deg, $color-primary 0%, #8B7CF8 50%, #A78BFA 100%);
+  padding: $spacing-xl $page-padding $spacing-xl * 2;
+  position: relative;
+  overflow: hidden;
+}
+
+.heroHeader::after {
+  content: '';
+  position: absolute;
+  right: -100rpx;
+  top: -100rpx;
+  width: 400rpx;
+  height: 400rpx;
+  border-radius: $radius-round;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.heroTitle {
+  font-size: $font-size-md;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: $spacing-xs;
+}
+
+.heroAmount {
+  font-size: 72rpx;
+  font-weight: $font-weight-bold;
+  color: $color-text-white;
+  line-height: 1.1;
+  margin-bottom: $spacing-xs;
+}
+
+.heroAmountPrefix {
+  font-size: 40rpx;
+  font-weight: $font-weight-semibold;
+  margin-right: 4rpx;
+}
+
+.heroSub {
+  font-size: $font-size-sm;
+  color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+}
+
+.heroTrend {
+  display: inline-flex;
+  align-items: center;
+  padding: 4rpx 12rpx;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: $radius-sm;
+  color: $color-text-white;
+  font-size: 22rpx;
+  font-weight: $font-weight-medium;
+}
+
+.statCards {
+  display: flex;
+  gap: $spacing-md;
+  padding: 0 $page-padding;
+  margin-top: -60rpx;
+  position: relative;
+  z-index: 1;
+  margin-bottom: $spacing-lg;
+}
+
+.chartCard {
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin: 0 $page-padding $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+.chartHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-lg;
+}
+
+.chartTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+}
+
+.chartTitleIcon {
+  font-size: 28rpx;
+}
+
+.chartTabs {
+  display: flex;
+  background-color: $color-bg-page;
+  border-radius: $radius-button;
+  padding: 4rpx;
+}
+
+.chartTab {
+  padding: 8rpx 20rpx;
+  border-radius: $radius-button;
+  font-size: 22rpx;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+  transition: all $transition-base;
+}
+
+.chartTabActive {
+  background-color: $color-bg-card;
+  color: $color-primary;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+}
+
+.chartBars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 280rpx;
+  gap: $spacing-sm;
+  padding-bottom: $spacing-lg;
+  border-bottom: 2rpx solid $color-divider;
+}
+
+.chartBarWrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  gap: $spacing-xs;
+}
+
+.chartBarValue {
+  font-size: 20rpx;
+  color: $color-text-tertiary;
+  font-weight: $font-weight-medium;
+  opacity: 0;
+  transform: translateY(10rpx);
+  transition: all $transition-base;
+}
+
+.chartBarWrap:hover .chartBarValue,
+.chartBarWrap:active .chartBarValue {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.chartBar {
+  width: 100%;
+  max-width: 56rpx;
+  border-radius: $radius-sm $radius-sm 0 0;
+  background: linear-gradient(180deg, $color-primary-light 0%, $color-primary 100%);
+  position: relative;
+  transition: all $transition-base;
+  min-height: 8rpx;
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.chartBarCurrent {
+  background: linear-gradient(180deg, #FF8A65 0%, #F472B6 100%);
+}
+
+.chartBarLabel {
+  font-size: 20rpx;
+  color: $color-text-tertiary;
+  margin-top: $spacing-xs;
+}
+
+.chartLegend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-lg;
+  margin-top: $spacing-md;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+}
+
+.legendDot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: $radius-round;
+}
+
+.legendText {
+  font-size: 22rpx;
+  color: $color-text-secondary;
+}
+
+.statusSection {
+  padding: 0 $page-padding;
+  margin-bottom: $spacing-lg;
+}
+
+.statusGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $spacing-md;
+}
+
+.statusCard {
+  background-color: $color-bg-card;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  text-align: center;
+  box-shadow: $shadow-card;
+}
+
+.statusDot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: $radius-round;
+  margin: 0 auto $spacing-xs;
+}
+
+.statusCount {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  line-height: 1.2;
+}
+
+.statusLabel {
+  font-size: 22rpx;
+  color: $color-text-tertiary;
+  margin-top: 4rpx;
+}
+
+.overdueSection {
+  padding: 0 $page-padding;
+}
+
+.overdueCard {
+  background: linear-gradient(135deg, #FEF2F2 0%, #FFF7ED 100%);
+  border: 2rpx solid #FECACA;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+}
+
+.overdueHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.overdueTitle {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: #DC2626;
+}
+
+.overdueIcon {
+  font-size: 32rpx;
+}
+
+.overdueBadge {
+  background-color: #DC2626;
+  color: $color-text-white;
+  font-size: 22rpx;
+  font-weight: $font-weight-semibold;
+  padding: 4rpx 16rpx;
+  border-radius: $radius-round;
+}
+
+.overdueItem {
+  background-color: $color-bg-card;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  margin-bottom: $spacing-sm;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.overdueItemTitle {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: 6rpx;
+  @include text-ellipsis;
+}
+
+.overdueItemMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.overdueItemInfo {
+  font-size: 22rpx;
+  color: $color-text-secondary;
+}
+
+.overdueDays {
+  font-size: 22rpx;
+  color: #DC2626;
+  font-weight: $font-weight-semibold;
+}

@@ -1,0 +1,118 @@
+@use '@/styles/variables.scss' as *;
+
+.card {
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.92;
+    transform: scale(0.995);
+  }
+}
+
+.leftSection {
+  display: flex;
+  gap: $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.avatar {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: $radius-round;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.avatarText {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-text-white;
+}
+
+.infoSection {
+  flex: 1;
+  min-width: 0;
+}
+
+.name {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: 4rpx;
+  @include text-ellipsis;
+}
+
+.contact {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: 6rpx;
+}
+
+.note {
+  font-size: 22rpx;
+  color: $color-text-tertiary;
+  line-height: $line-height-normal;
+  @include text-ellipsis-multi(1);
+  display: block;
+}
+
+.noteIcon {
+  font-size: 20rpx;
+}
+
+.rightSection {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background-color: $color-bg-page;
+  border-radius: $radius-sm;
+  padding: $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4rpx;
+}
+
+.statDivider {
+  width: 1rpx;
+  height: 56rpx;
+  background-color: $color-border;
+}
+
+.statValue {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+}
+
+.statValuePrimary {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-price;
+}
+
+.statLabel {
+  font-size: 20rpx;
+  color: $color-text-tertiary;
+}
+
+.footer {
+  padding-top: $spacing-sm;
+  border-top: 1rpx solid $color-divider;
+}
+
+.footerDate {
+  font-size: 20rpx;
+  color: $color-text-tertiary;
+}

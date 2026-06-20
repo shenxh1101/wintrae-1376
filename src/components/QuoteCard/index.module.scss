@@ -1,0 +1,161 @@
+@use '@/styles/variables.scss' as *;
+
+.card {
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.date {
+  font-size: 20rpx;
+  color: $color-text-tertiary;
+}
+
+.totalPrice {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-price;
+}
+
+.projectName {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-xs;
+  @include text-ellipsis;
+}
+
+.clientName {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-md;
+}
+
+.clientLabel {
+  color: $color-text-tertiary;
+}
+
+.priceBreakdown {
+  background-color: $color-bg-page;
+  border-radius: $radius-sm;
+  padding: $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.priceRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-xs 0;
+
+  &:not(:last-child) {
+    border-bottom: 1rpx dashed $color-border;
+  }
+}
+
+.priceLabelWrap {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  flex: 1;
+}
+
+.priceLabelDot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: $radius-round;
+  flex-shrink: 0;
+}
+
+.priceLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.priceValue {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.priceAdd {
+  color: $color-success;
+}
+
+.note {
+  background-color: $color-primary-bg;
+  border-radius: $radius-sm;
+  padding: $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.noteLabel {
+  font-size: 20rpx;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+  display: block;
+  margin-bottom: 4rpx;
+}
+
+.noteText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: $line-height-normal;
+}
+
+.actions {
+  display: flex;
+  gap: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+}
+
+.btn {
+  @include button-reset;
+  flex: 1;
+  height: $button-height-md;
+  border-radius: $radius-button;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
+
+.btnReject {
+  background-color: $color-bg-hover;
+  border: 1rpx solid $color-border;
+}
+
+.btnRejectText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+}
+
+.btnAccept {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  border: none;
+}
+
+.btnAcceptText {
+  font-size: $font-size-sm;
+  color: $color-text-white;
+  font-weight: $font-weight-semibold;
+}

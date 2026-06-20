@@ -1,0 +1,380 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background-color: $color-bg-page;
+  padding-bottom: 120rpx;
+}
+
+.header {
+  background: linear-gradient(135deg, #FF8A65 0%, #FFAB91 50%, #F472B6 100%);
+  padding: $spacing-xl $page-padding;
+}
+
+.headerTitle {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-text-white;
+  margin-bottom: $spacing-xs;
+}
+
+.headerSub {
+  font-size: $font-size-sm;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: $spacing-lg;
+}
+
+.overviewCards {
+  display: flex;
+  gap: $spacing-md;
+}
+
+.overviewCard {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10rpx);
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  border: 1rpx solid rgba(255, 255, 255, 0.25);
+}
+
+.overviewValue {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-text-white;
+  display: block;
+  line-height: 1.2;
+}
+
+.overviewLabel {
+  font-size: 20rpx;
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 4rpx;
+}
+
+.filterBar {
+  display: flex;
+  padding: $spacing-md $page-padding;
+  gap: $spacing-sm;
+}
+
+.filterChip {
+  @include button-reset;
+  padding: 10rpx 24rpx;
+  background-color: $color-bg-card;
+  border-radius: $radius-button;
+  box-shadow: $shadow-card;
+  height: auto;
+
+  &:active {
+    opacity: 0.9;
+  }
+}
+
+.filterChipActive {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+}
+
+.filterChipText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+  white-space: nowrap;
+}
+
+.filterChipTextActive {
+  color: $color-text-white;
+}
+
+.orderSection {
+  padding: 0 $page-padding;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.sectionTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+}
+
+.sectionTitleIcon {
+  font-size: 28rpx;
+}
+
+.sectionCount {
+  font-size: 22rpx;
+  color: $color-text-tertiary;
+  background-color: $color-bg-card;
+  padding: 4rpx 16rpx;
+  border-radius: $radius-round;
+}
+
+.deliveryCard {
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+}
+
+.deliveryHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.deliveryInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.deliveryTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: 6rpx;
+  @include text-ellipsis;
+}
+
+.deliveryMeta {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  flex-wrap: wrap;
+}
+
+.deliveryMetaItem {
+  font-size: 22rpx;
+  color: $color-text-secondary;
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+}
+
+.deliveryMetaIcon {
+  font-size: 20rpx;
+}
+
+.priceTag {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-price;
+}
+
+.fileSection {
+  background-color: $color-bg-page;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.fileSectionTitle {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-sm;
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+}
+
+.fileSectionIcon {
+  font-size: 24rpx;
+}
+
+.previewList {
+  display: flex;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-sm;
+}
+
+.previewItem {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: $radius-md;
+  overflow: hidden;
+  flex-shrink: 0;
+  background-color: $color-bg-hover;
+  position: relative;
+}
+
+.previewImg {
+  width: 100%;
+  height: 100%;
+}
+
+.previewPlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48rpx;
+  background: linear-gradient(135deg, #E5E7EB 0%, #F3F4F6 100%);
+}
+
+.fileList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+}
+
+.fileItem {
+  display: flex;
+  align-items: center;
+  background-color: $color-bg-card;
+  border-radius: $radius-sm;
+  padding: $spacing-sm $spacing-md;
+  gap: $spacing-sm;
+}
+
+.fileIcon {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: $radius-sm;
+  background-color: $color-primary-bg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  flex-shrink: 0;
+}
+
+.fileInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.fileName {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+  @include text-ellipsis;
+  display: block;
+}
+
+.fileSize {
+  font-size: 20rpx;
+  color: $color-text-tertiary;
+}
+
+.actionBtn {
+  @include button-reset;
+  padding: 8rpx 20rpx;
+  background-color: $color-primary-bg;
+  border-radius: $radius-button;
+  height: auto;
+
+  &:active {
+    opacity: 0.85;
+  }
+}
+
+.actionBtnText {
+  font-size: 22rpx;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+}
+
+.paymentSection {
+  background-color: $color-bg-page;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.paymentRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-xs 0;
+
+  &:not(:last-child) {
+    margin-bottom: $spacing-xs;
+  }
+}
+
+.paymentLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.paymentValue {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.paymentValueHighlight {
+  color: $color-price;
+  font-weight: $font-weight-bold;
+}
+
+.paymentProgress {
+  height: 8rpx;
+  background-color: $color-border;
+  border-radius: $radius-round;
+  overflow: hidden;
+  margin: $spacing-xs 0 $spacing-sm;
+}
+
+.paymentProgressBar {
+  height: 100%;
+  background: linear-gradient(90deg, $color-success 0%, #6EE7B7 100%);
+  border-radius: $radius-round;
+}
+
+.actionRow {
+  display: flex;
+  gap: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+}
+
+.actionBtnPrimary {
+  @include button-reset;
+  flex: 1;
+  height: $button-height-md;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  border-radius: $radius-button;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
+
+.actionBtnSecondary {
+  @include button-reset;
+  flex: 1;
+  height: $button-height-md;
+  background-color: $color-bg-page;
+  border: 2rpx solid $color-border;
+  border-radius: $radius-button;
+
+  &:active {
+    opacity: 0.9;
+  }
+}
+
+.actionBtnPrimaryText {
+  font-size: $font-size-sm;
+  color: $color-text-white;
+  font-weight: $font-weight-semibold;
+}
+
+.actionBtnSecondaryText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+}
