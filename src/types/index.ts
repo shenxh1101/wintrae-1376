@@ -36,6 +36,7 @@ export interface DeliveryFile {
   size: string;
   fileUrl?: string;
   previewUrl?: string;
+  fallbackUrl?: string;
   uploadedAt: string;
 }
 

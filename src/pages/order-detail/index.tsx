@@ -66,19 +66,17 @@ const OrderDetailPage: React.FC = () => {
     Taro.navigateTo({ url: `/pages/delivery-upload/index?orderId=${order.id}` });
   };
 
-  const handleStatusChange = (status: OrderStatus) => {
-    if (!order) return;
-    const cfg = ORDER_STATUS_MAP[status];
-    Taro.showModal({
-      title: '更新状态',
-      content: `确定将订单状态变更为「${cfg.label}」吗？`,
-      success: (res) => {
-        if (res.confirm) {
-          updateOrderStatus(order.id, status);
-          Taro.showToast({ title: `已更新为${cfg.label}`, icon: 'success' });
-        }
-      }
-    });
+  const handleImageError = (fileId: string, e: any) => {
+    const img = e.currentTarget;
+    const f = order?.deliveryFiles.find((x) => x.id === fileId);
+    if (f?.fallbackUrl && img && img.getAttribute('data-fallback') !== '1') {
+      img.setAttribute('data-fallback', '1');
+      img.src = f.fallbackUrl;
+    }
+  };
+
+  const getEffectivePreviewUrl = (file: any): string => {
+    return file.previewUrl || file.fallbackUrl || '';
   };
 
   const handlePaymentChange = (status: 'unpaid' | 'partial' | 'paid') => {
@@ -228,7 +226,7 @@ const OrderDetailPage: React.FC = () => {
             <View className={styles.paymentStatusBar}>
               <View
                 className={styles.paymentProgressFill}
-                style={{ width: `${(order.paidAmount / order.price) * 100}%` }}
+                style={{ width: `${order.price > 0 ? Math.min(100, (order.paidAmount / order.price) * 100) : 0}%` }}
               />
             </View>
             <View className={styles.paymentInfo}>
@@ -331,8 +329,13 @@ const OrderDetailPage: React.FC = () => {
               {order.deliveryFiles.map((file) => (
                 <View key={file.id} className={styles.deliveryItem}>
                   <View className={styles.deliveryThumb}>
-                    {file.previewUrl ? (
-                      <Image className={styles.thumbImage} src={file.previewUrl} mode='aspectFill' />
+                    {getEffectivePreviewUrl(file) ? (
+                      <Image
+                        className={styles.thumbImage}
+                        src={getEffectivePreviewUrl(file)}
+                        mode='aspectFill'
+                        onError={(e) => handleImageError(file.id, e)}
+                      />
                     ) : (
                       <View style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '36rpx' }}>
                         📄

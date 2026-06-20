@@ -128,12 +128,15 @@ const DeliveryUploadPage: React.FC = () => {
     if (!validate()) return;
     if (!orderId) return;
 
+    const fallback = `https://picsum.photos/seed/file-${seed}/600/800`;
+
     addDeliveryFile(orderId, {
       name: fileName.trim(),
       type: fileType,
       size: fileSize,
       fileUrl,
-      previewUrl: previewUrl || `https://picsum.photos/seed/${seed}/600/800`
+      previewUrl: previewUrl || undefined,
+      fallbackUrl: fallback
     });
 
     Taro.showToast({ title: '上传成功', icon: 'success' });

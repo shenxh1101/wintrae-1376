@@ -171,21 +171,32 @@ export const useAppStore = create<AppState>((set, get) => ({
   updateOrder: (id, updates) =>
     set((state) => {
       const oldOrder = state.orders.find((o) => o.id === id);
+      if (!oldOrder) return state;
+
+      let newUpdates = { ...updates, updatedAt: new Date().toISOString() };
+
+      const priceChanged = updates.price !== undefined && updates.price !== oldOrder.price;
+      const isDeliveredAndPaid = oldOrder.status === 'delivered' && oldOrder.paymentStatus === 'paid';
+
+      if (priceChanged && isDeliveredAndPaid) {
+        newUpdates.paidAmount = updates.price;
+      }
+
+      const newPaidAmount = newUpdates.paidAmount !== undefined ? newUpdates.paidAmount : oldOrder.paidAmount;
+      const paidDiff = newPaidAmount - oldOrder.paidAmount;
+
       const newState = {
         orders: state.orders.map((o) =>
-          o.id === id ? { ...o, ...updates, updatedAt: new Date().toISOString() } : o
+          o.id === id ? { ...o, ...newUpdates } : o
         )
       };
 
-      if (updates.price !== undefined && oldOrder) {
-        const priceDiff = updates.price - oldOrder.price;
-        if (oldOrder.status === 'delivered' && oldOrder.clientId && !oldOrder.clientId.startsWith('temp-')) {
-          newState.clients = state.clients.map((c) =>
-            c.id === oldOrder.clientId
-              ? { ...c, totalRevenue: Math.max(0, c.totalRevenue + priceDiff) }
-              : c
-          );
-        }
+      if (oldOrder.status === 'delivered' && paidDiff !== 0 && oldOrder.clientId && !oldOrder.clientId.startsWith('temp-')) {
+        newState.clients = state.clients.map((c) =>
+          c.id === oldOrder.clientId
+            ? { ...c, totalRevenue: Math.max(0, c.totalRevenue + paidDiff) }
+            : c
+        );
       }
 
       persist({ ...state, ...newState });
@@ -293,6 +304,8 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   addDeliveryFile: (orderId, file) =>
     set((state) => {
+      const newFileId = generateId();
+      const fallbackUrl = `https://picsum.photos/seed/file-${newFileId}/600/800`;
       const newState = {
         orders: state.orders.map((o) =>
           o.id === orderId
@@ -300,7 +313,12 @@ export const useAppStore = create<AppState>((set, get) => ({
                 ...o,
                 deliveryFiles: [
                   ...o.deliveryFiles,
-                  { ...file, id: generateId(), uploadedAt: new Date().toISOString() }
+                  { 
+                    ...file, 
+                    id: newFileId, 
+                    uploadedAt: new Date().toISOString(),
+                    fallbackUrl: file.fallbackUrl || fallbackUrl
+                  }
                 ],
                 updatedAt: new Date().toISOString()
               }

@@ -78,8 +78,13 @@ const DeliveryArchivePage: React.FC = () => {
     Taro.showActionSheet({
       itemList: [`打开预览图`, `复制文件名：${file.name}`, '查看订单详情'],
       success: (res) => {
-        if (res.tapIndex === 0 && file.previewUrl) {
-          Taro.previewImage({ urls: [file.previewUrl] });
+        if (res.tapIndex === 0) {
+          const url = file.previewUrl || file.fallbackUrl;
+          if (url) {
+            Taro.previewImage({ urls: [url] });
+          } else {
+            Taro.showToast({ title: '预览图不可用', icon: 'none' });
+          }
         } else if (res.tapIndex === 1) {
           Taro.setClipboardData({ data: file.name });
         } else if (res.tapIndex === 2) {
@@ -89,11 +94,30 @@ const DeliveryArchivePage: React.FC = () => {
     });
   };
 
+  const getEffectivePreviewUrl = (file: any): string => {
+    return file.previewUrl || file.fallbackUrl || '';
+  };
+
+  const handleImageError = (file: any, e: any) => {
+    const img = e.currentTarget;
+    if (file?.fallbackUrl && img && img.getAttribute('data-fallback') !== '1') {
+      img.setAttribute('data-fallback', '1');
+      img.src = file.fallbackUrl;
+    }
+  };
+
   const handleClientFilterChange = (value: string) => {
     setClientFilter(value);
-    if (value !== 'all') {
-      const matched = ordersWithDelivery.find((o) => o.clientId === value);
-      if (!matched) setOrderFilter('all');
+    if (orderFilter !== 'all') {
+      if (value === 'all') {
+        const stillExists = ordersWithDelivery.some((o) => o.id === orderFilter);
+        if (!stillExists) setOrderFilter('all');
+      } else {
+        const orderBelongsToClient = ordersWithDelivery.some(
+          (o) => o.id === orderFilter && o.clientId === value
+        );
+        if (!orderBelongsToClient) setOrderFilter('all');
+      }
     }
   };
 
@@ -174,8 +198,13 @@ const DeliveryArchivePage: React.FC = () => {
             <View key={file.id} className={styles.fileCard}>
               <View className={styles.fileCardHeader}>
                 <View className={styles.fileThumb}>
-                  {file.previewUrl ? (
-                    <Image className={styles.thumbImage} src={file.previewUrl} mode='aspectFill' />
+                  {getEffectivePreviewUrl(file) ? (
+                    <Image
+                      className={styles.thumbImage}
+                      src={getEffectivePreviewUrl(file)}
+                      mode='aspectFill'
+                      onError={(e) => handleImageError(file, e)}
+                    />
                   ) : (
                     <View style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48rpx' }}>
                       📄
