@@ -110,6 +110,7 @@ interface AppState {
   getPendingRevenue: () => number;
   getMonthlyStats: () => MonthlyStats[];
   getDeliveredFiles: (filters?: { clientId?: string; orderId?: string }) => (DeliveryFile & {
+    orderId: string;
     orderTitle: string;
     clientId: string;
     clientName: string;
@@ -404,6 +405,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   getDeliveredFiles: (filters = {}) => {
     const { orders } = get();
     const result: (DeliveryFile & {
+      orderId: string;
       orderTitle: string;
       clientId: string;
       clientName: string;
@@ -420,6 +422,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       o.deliveryFiles.forEach((f) => {
         result.push({
           ...f,
+          orderId: o.id,
           orderTitle: o.title,
           clientId: o.clientId,
           clientName: o.clientName,

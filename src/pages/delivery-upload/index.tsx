@@ -14,6 +14,20 @@ const FILE_TYPES = [
   { key: 'other', label: '其他', size: '—' }
 ];
 
+const formatSize = (bytes?: number): string => {
+  if (!bytes) return '未知大小';
+  const kb = bytes / 1024;
+  if (kb > 1024) return `${(kb / 1024).toFixed(1)}MB`;
+  if (kb > 1) return `${Math.round(kb)}KB`;
+  return `${bytes}B`;
+};
+
+const inferTypeFromName = (name: string): string => {
+  const ext = name.split('.').pop()?.toLowerCase() || '';
+  const found = FILE_TYPES.find((t) => t.key === ext);
+  return found?.key || 'other';
+};
+
 const DeliveryUploadPage: React.FC = () => {
   const router = useRouter();
   const orderId = router.params.orderId;
@@ -52,28 +66,26 @@ const DeliveryUploadPage: React.FC = () => {
   };
 
   const handleChooseFile = () => {
-    Taro.chooseImage({
+    Taro.chooseMessageFile({
       count: 1,
-      sizeType: ['original', 'compressed'],
-      sourceType: ['album', 'camera'],
+      type: 'file',
       success: (res) => {
-        const path = res.tempFilePaths[0];
-        setFileUrl(path);
-        const info = res.tempFiles?.[0];
-        if (info?.size) {
-          const kb = info.size / 1024;
-          if (kb > 1024) setFileSize(`约 ${(kb / 1024).toFixed(1)}MB`);
-          else setFileSize(`约 ${Math.round(kb)}KB`);
-        }
-        if (!previewUrl) {
-          setPreviewUrl(path);
-        }
+        const f = res.tempFiles?.[0];
+        if (!f) return;
+        setFileUrl(f.path);
+        setFileSize(formatSize(f.size));
+        const detectedName = f.name || f.path.split('/').pop() || `delivery.${fileType}`;
+        setFileName(detectedName);
+        const detectedType = inferTypeFromName(detectedName);
+        setFileType(detectedType);
       },
       fail: () => {
-        const fallback = `https://picsum.photos/seed/file-${seed}/800/1000`;
+        const fallback = `file://local-delivery-${seed}`;
         setFileUrl(fallback);
-        if (!previewUrl) setPreviewUrl(`https://picsum.photos/seed/preview-${seed}/600/800`);
-        if (!fileSize) setFileSize(FILE_TYPES.find((t) => t.key === fileType)?.size || '约 5MB');
+        const typeInfo = FILE_TYPES.find((t) => t.key === fileType);
+        const fallbackName = `${order.title}_最终版.${typeInfo?.label.toLowerCase() || fileType}`;
+        setFileName(fallbackName);
+        if (!fileSize) setFileSize(typeInfo?.size || '约 5MB');
       }
     });
   };
@@ -180,7 +192,7 @@ const DeliveryUploadPage: React.FC = () => {
 
         <View className={styles.card}>
           <Text className={styles.cardTitle}>
-            <Text className={styles.icon}>�</Text>文件上传
+            <Text className={styles.icon}>📁</Text>文件上传
           </Text>
 
           <View className={styles.uploaderSection}>
@@ -204,9 +216,9 @@ const DeliveryUploadPage: React.FC = () => {
               </View>
             ) : (
               <View className={styles.uploaderCard} onClick={handleChooseFile}>
-                <Text className={styles.uploadIcon}>�</Text>
+                <Text className={styles.uploadIcon}>📁</Text>
                 <Text className={styles.uploadText}>点击选择最终文件</Text>
-                <Text className={styles.uploadHint}>支持 PSD / PNG / JPG / AI / ZIP 等</Text>
+                <Text className={styles.uploadHint}>支持 PSD / PNG / JPG / AI / ZIP 等任意类型</Text>
               </View>
             )}
           </View>

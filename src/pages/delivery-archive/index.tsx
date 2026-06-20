@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { View, Text, Image } from '@tarojs/components';
 import Taro, { useDidShow } from '@tarojs/taro';
 import { useAppStore } from '@/store/useAppStore';
-import { Client, PAYMENT_STATUS_MAP } from '@/types';
+import { Client, Order, PAYMENT_STATUS_MAP } from '@/types';
 import { formatPrice, formatDateTime } from '@/utils';
 import styles from './index.module.scss';
 
@@ -14,12 +14,18 @@ const DeliveryArchivePage: React.FC = () => {
   const getDeliveredFiles = useAppStore((s) => s.getDeliveredFiles);
 
   const [clientFilter, setClientFilter] = useState<string>('all');
+  const [orderFilter, setOrderFilter] = useState<string>('all');
   const [sortMode, setSortMode] = useState<SortMode>('time');
   const [refreshTick, setRefreshTick] = useState(0);
 
   useDidShow(() => {
     setRefreshTick((t) => t + 1);
   });
+
+  const ordersWithDelivery: Order[] = useMemo(
+    () => orders.filter((o) => o.deliveryFiles.length > 0),
+    [orders, refreshTick]
+  );
 
   const clientOptions: { label: string; value: string }[] = useMemo(
     () => [
@@ -29,15 +35,25 @@ const DeliveryArchivePage: React.FC = () => {
     [clients, refreshTick]
   );
 
+  const orderOptions: { label: string; value: string; clientId: string }[] = useMemo(() => {
+    const list = [{ label: '全部订单', value: 'all', clientId: '' }];
+    ordersWithDelivery.forEach((o) => {
+      if (clientFilter !== 'all' && o.clientId !== clientFilter) return;
+      list.push({ label: o.title, value: o.id, clientId: o.clientId });
+    });
+    return list;
+  }, [ordersWithDelivery, clientFilter, refreshTick]);
+
   const allFiles = useMemo(() => {
     const filters: any = {};
     if (clientFilter !== 'all') filters.clientId = clientFilter;
+    if (orderFilter !== 'all') filters.orderId = orderFilter;
     const files = getDeliveredFiles(filters);
     if (sortMode === 'client') {
       return files.sort((a, b) => a.clientName.localeCompare(b.clientName));
     }
     return files;
-  }, [orders, clients, clientFilter, sortMode, getDeliveredFiles, refreshTick]);
+  }, [orders, clients, clientFilter, orderFilter, sortMode, getDeliveredFiles, refreshTick]);
 
   const stats = useMemo(() => {
     const total = allFiles.length;
@@ -67,15 +83,18 @@ const DeliveryArchivePage: React.FC = () => {
         } else if (res.tapIndex === 1) {
           Taro.setClipboardData({ data: file.name });
         } else if (res.tapIndex === 2) {
-          handleViewOrder(findOrderId(file));
+          handleViewOrder(file.orderId);
         }
       }
     });
   };
 
-  const findOrderId = (f: any) => {
-    const o = orders.find((ord) => ord.deliveryFiles.some((df) => df.id === f.id));
-    return o?.id || '';
+  const handleClientFilterChange = (value: string) => {
+    setClientFilter(value);
+    if (value !== 'all') {
+      const matched = ordersWithDelivery.find((o) => o.clientId === value);
+      if (!matched) setOrderFilter('all');
+    }
   };
 
   return (
@@ -108,7 +127,21 @@ const DeliveryArchivePage: React.FC = () => {
                 <View
                   key={opt.value}
                   className={`${styles.chip} ${clientFilter === opt.value ? styles.active : ''}`}
-                  onClick={() => setClientFilter(opt.value)}
+                  onClick={() => handleClientFilterChange(opt.value)}
+                >
+                  {opt.label}
+                </View>
+              ))}
+            </View>
+          </View>
+          <View className={styles.filterRow}>
+            <Text className={styles.filterLabel}>订单筛选</Text>
+            <View className={styles.filterChips}>
+              {orderOptions.map((opt) => (
+                <View
+                  key={opt.value}
+                  className={`${styles.chip} ${orderFilter === opt.value ? styles.active : ''}`}
+                  onClick={() => setOrderFilter(opt.value)}
                 >
                   {opt.label}
                 </View>
@@ -181,7 +214,7 @@ const DeliveryArchivePage: React.FC = () => {
                 </View>
                 <View
                   className={`${styles.footerBtn} ${styles.primary}`}
-                  onClick={() => handleViewOrder(findOrderId(file))}
+                  onClick={() => handleViewOrder(file.orderId)}
                 >
                   📦 订单
                 </View>
